@@ -1,35 +1,55 @@
 #include <iostream>
 #include <thread>
 #include <vector>
+#include <map>
+#include <algorithm>
 #include <winsock2.h>
 
 #pragma comment(lib, "ws2_32.lib") // winsock library
 using namespace std;
 
 vector<SOCKET> clients;
+map<SOCKET, string> clientNames; // mapping client socket and nickname
 
 void handle_client(SOCKET clientSocket)
 {
     char buffer[1024];
+
+    memset(buffer, 0, sizeof(buffer));
+    recv(clientSocket, buffer, sizeof(buffer), 0);
+    string clientName = buffer;
+    clientNames[clientSocket] = clientName;
+
+    cout << clientName << " is Connect! Hi~\n";
+
     while (true)
     {
         memset(buffer, 0, sizeof(buffer));
         int bytesRecevied = recv(clientSocket, buffer, sizeof(buffer), 0);
         if (bytesRecevied <= 0)
         {
-            cout << "Client disconnect\n";
+            cout << clientName << " is disconnect\n";
             closesocket(clientSocket);
+            auto it = find(clients.begin(), clients.end(), clientSocket);
+            if (it != clients.end())
+            {
+                clients.erase(it);
+            };
+            // clients.erase(remove(clients.begin(), clients.end(), clientSocket), clients.end());
+            // error: cannot convert 'std::vector<long long unsigned int>::iterator
+            clientNames.erase(clientSocket);
             return;
         }
 
-        cout << "Client: " << buffer << endl;
+        string message = clientName + ": " + buffer;
+        cout << message << endl;
 
         // all client send message
         for (SOCKET client : clients)
         {
             if (client != clientSocket)
             {
-                send(client, buffer, bytesRecevied, 0);
+                send(client, message.c_str(), message.size(), 0);
             }
         }
     }
@@ -56,9 +76,8 @@ int main()
         sockaddr_in clientAddr;
         int addrLen = sizeof(clientAddr);
         SOCKET clientSocket = accept(serverSocket, (sockaddr *)&clientAddr, &addrLen);
-        cout << "New Client Connect!\n";
-
         clients.push_back(clientSocket);
+
         thread clientThread(handle_client, clientSocket);
         clientThread.detach();
     }

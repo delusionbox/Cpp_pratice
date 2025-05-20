@@ -16,7 +16,8 @@ void receiveMessage(SOCKET sock)
         int bytesReceived = recv(sock, buffer, sizeof(buffer), 0);
         if (bytesReceived > 0)
         {
-            cout << "\nserver" << buffer << endl;
+            cout << "\n"
+                 << buffer << endl;
         }
     }
 }
@@ -35,6 +36,11 @@ int main()
     if (connect(sock, (sockaddr *)&serverAddr, sizeof(serverAddr)) == 0)
     {
         cout << "Connected Server!";
+
+        cout << "Input Nickname plz: ";
+        string nickname;
+        getline(cin, nickname);
+        send(sock, nickname.c_str(), nickname.size(), 0);
 
         thread recvThread(receiveMessage, sock);
         recvThread.detach();
