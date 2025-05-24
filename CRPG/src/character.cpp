@@ -1,8 +1,8 @@
 #include "character.h"
 #include <iostream>
 
-Character::Character(string name, int hp, int atk)
-    : name(name), hp(hp), maxHp(hp), atk(atk) {}
+Character::Character(string name, int hp, int atk, int gold)
+    : name(name), hp(hp), maxHp(hp), atk(atk), gold(gold) {}
 
 void Character::addItem(const Item &item)
 {

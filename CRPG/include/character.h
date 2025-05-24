@@ -12,9 +12,11 @@ public:
     int hp;
     int maxHp;
     int atk;
+    int gold;
+
     vector<Item> inventory;
 
-    Character(string name, int hp, int atk);
+    Character(string name, int hp, int atk, int gold);
 
     void addItem(const Item &item);
     void useItem(int index);
