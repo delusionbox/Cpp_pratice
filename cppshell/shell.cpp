@@ -1,0 +1,144 @@
+#include <iostream>
+#include <string>
+#include <sstream>
+#include <vector>
+#include <ctime>
+#include <filesystem>
+#include <direct.h>
+#include <io.h>
+
+using namespace std;
+
+void showHelp()
+{
+    cout << "Available Commands: echo, help, time, exit, clear, pwd, ls" << endl;
+};
+
+void showTime()
+{
+    time_t now = time(0);
+    tm *localTime = localtime(&now);
+    cout << "Current Time: "
+         << 1900 + localTime->tm_year << "-"
+         << 1 + localTime->tm_mon << "-"
+         << localTime->tm_mday << " "
+         << localTime->tm_hour << ":"
+         << localTime->tm_min << ":"
+         << localTime->tm_sec << endl;
+};
+
+void clearScreen()
+{
+#ifdef _WIN32
+    system("cls"); // window
+#else
+    system("clear"); // Mac or Linux
+#endif
+};
+
+void printWorkDirectory()
+{
+    // cout << filesystem::current_path() << endl;
+    char buffer[FILENAME_MAX];
+    if (_getcwd(buffer, FILENAME_MAX))
+    {
+        cout << buffer << endl;
+    }
+    else
+    {
+        cerr << "ERROR\n"
+             << endl;
+    }
+}
+
+void listDirectory()
+{
+    /*
+    for (const auto &entry : filesystem::directory_iterator(filesystem::current_path()))
+    {
+        cout << entry.path().filename().string() << endl;
+    };
+    */
+
+    char buffer[FILENAME_MAX];
+    if (!_getcwd(buffer, FILENAME_MAX))
+    {
+        cerr << "ERROR\n"
+             << endl;
+        return;
+    }
+
+    string path = string(buffer) + "\\*";
+    struct _finddata_t fileinfo;
+    intptr_t handle = _findfirst(path.c_str(), &fileinfo);
+
+    if (handle == -1)
+    {
+        cerr << "ERROR\n"
+             << endl;
+    }
+
+    do
+    {
+        cout << fileinfo.name;
+        if (fileinfo.attrib & _A_SUBDIR)
+        {
+            cout << " [DIR]";
+        }
+        cout << endl;
+    } while (_findnext(handle, &fileinfo) == 0);
+    _findclose(handle);
+}
+
+int main()
+{
+    string input;
+
+    while (true)
+    {
+        cout << ">>";
+        getline(cin, input);
+
+        stringstream ss(input);
+        string command;
+        ss >> command;
+
+        if (command == "exit")
+        {
+            break;
+        }
+        else if (command == "help")
+        {
+            showHelp();
+        }
+        else if (command == "time")
+        {
+            showTime();
+        }
+        else if (command == "echo")
+        {
+            string text;
+            getline(ss, text);
+            cout << text << endl;
+        }
+        else if (command == "clear")
+        {
+            clearScreen();
+        }
+        else if (command == "pwd")
+        {
+            printWorkDirectory();
+        }
+        else if (command == "ls")
+        {
+            listDirectory();
+        }
+        else
+        {
+            cout << "Wrong Command. Input help" << endl;
+        }
+    }
+
+    cout << "Shell exit" << endl;
+    return 0;
+}
