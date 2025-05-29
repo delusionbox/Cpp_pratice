@@ -49,7 +49,7 @@ void printWorkDirectory()
         cerr << "ERROR\n"
              << endl;
     }
-}
+};
 
 void listDirectory()
 {
@@ -88,7 +88,21 @@ void listDirectory()
         cout << endl;
     } while (_findnext(handle, &fileinfo) == 0);
     _findclose(handle);
-}
+};
+
+void changeDirectory(const string &path)
+{
+    if (_chdir(path.c_str()) != 0)
+    {
+        cerr << "Directory change failed: '" << path << "'\n";
+    }
+    else
+    {
+        char buffer[FILENAME_MAX];
+        _getcwd(buffer, FILENAME_MAX);
+        cout << "Directory change: " << buffer << endl;
+    };
+};
 
 int main()
 {
@@ -132,6 +146,19 @@ int main()
         else if (command == "ls")
         {
             listDirectory();
+        }
+        else if (command == "cd")
+        {
+            string target;
+            ss >> target;
+            if (target.empty())
+            {
+                cerr << "cd: Input Path.\n";
+            }
+            else
+            {
+                changeDirectory(target);
+            }
         }
         else
         {
