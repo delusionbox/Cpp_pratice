@@ -6,6 +6,8 @@
 #include <filesystem>
 #include <direct.h>
 #include <io.h>
+#include <cerrno>
+#include <cstring>
 
 using namespace std;
 
@@ -104,6 +106,19 @@ void changeDirectory(const string &path)
     };
 };
 
+void makeDirectory(const string &DName)
+{
+    if (_mkdir(DName.c_str()) != 0)
+    {
+        cerr << "mkdir failed: " << DName << "'\n";
+        cerr << "Reason: " << strerror(errno) << "\n";
+    }
+    else
+    {
+        cout << "mkdir success: " << DName << endl;
+    }
+}
+
 int main()
 {
     string input;
@@ -158,6 +173,19 @@ int main()
             else
             {
                 changeDirectory(target);
+            }
+        }
+        else if (command == "mkdir")
+        {
+            string folder;
+            ss >> folder;
+            if (folder.empty())
+            {
+                cerr << "mkdir: Input Directory Name.\n";
+            }
+            else
+            {
+                makeDirectory(folder);
             }
         }
         else
