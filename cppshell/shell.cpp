@@ -8,12 +8,13 @@
 #include <io.h>
 #include <cerrno>
 #include <cstring>
+#include <fstream> // ofstream
 
 using namespace std;
 
 void showHelp()
 {
-    cout << "Available Commands: echo, help, time, exit, clear, pwd, ls" << endl;
+    cout << "Available Commands: echo, help, time, exit, clear, pwd, ls, cd, mkdir, touch " << endl;
 };
 
 void showTime()
@@ -117,7 +118,20 @@ void makeDirectory(const string &DName)
     {
         cout << "mkdir success: " << DName << endl;
     }
-}
+};
+
+void createFile(const string &filename)
+{
+    ofstream file(filename);
+    if (!file)
+    {
+        cerr << "create file failed: " << filename << endl;
+        return;
+    }
+
+    cout << "file is created" << filename << endl;
+    file.close();
+};
 
 int main()
 {
@@ -187,6 +201,19 @@ int main()
             {
                 makeDirectory(folder);
             }
+        }
+        else if (command == "touch")
+        {
+            string filename;
+            ss >> filename;
+            if (filename.empty())
+            {
+                cerr << "touch: Input filename.\n";
+            }
+            else
+            {
+                createFile(filename);
+            };
         }
         else
         {
