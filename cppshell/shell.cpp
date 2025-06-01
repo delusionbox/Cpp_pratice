@@ -133,6 +133,18 @@ void createFile(const string &filename)
     file.close();
 };
 
+void removeFile(const string &filename)
+{
+    if (remove(filename.c_str()) != 0)
+    {
+        cerr << "File Remove Fail: " << filename << endl;
+    }
+    else
+    {
+        cout << "File Removed: " << filename << endl;
+    }
+};
+
 int main()
 {
     string input;
@@ -213,6 +225,19 @@ int main()
             else
             {
                 createFile(filename);
+            };
+        }
+        else if (command == "rm")
+        {
+            string filename;
+            ss >> filename;
+            if (filename.empty())
+            {
+                cerr << "rm: Input filename.\n";
+            }
+            else
+            {
+                removeFile(filename);
             };
         }
         else
