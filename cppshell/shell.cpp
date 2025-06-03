@@ -8,7 +8,7 @@
 #include <io.h>
 #include <cerrno>
 #include <cstring>
-#include <fstream> // ofstream
+#include <fstream> // ofstream, ifstream
 
 using namespace std;
 
@@ -145,6 +145,23 @@ void removeFile(const string &filename)
     }
 };
 
+void printFile(const string &filename)
+{
+    ifstream file(filename);
+    if (!file.is_open())
+    {
+        cerr << "Open File failed" << filename << endl;
+        return;
+    }
+    string line;
+    while (getline(file, line))
+    {
+        cout << line << endl;
+    }
+
+    file.close();
+};
+
 int main()
 {
     string input;
@@ -239,6 +256,19 @@ int main()
             {
                 removeFile(filename);
             };
+        }
+        else if (command == "cat")
+        {
+            string filename;
+            ss >> filename;
+            if (filename.empty())
+            {
+                cerr << "Input filename.\n";
+            }
+            else
+            {
+                printFile(filename);
+            }
         }
         else
         {
