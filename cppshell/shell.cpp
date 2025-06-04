@@ -162,6 +162,36 @@ void printFile(const string &filename)
     file.close();
 };
 
+void echoFile(const string &inputLine)
+{
+    size_t redirectPos = inputLine.find('>');
+
+    if (redirectPos == string::npos)
+    {
+        cerr << "echo: echo [content] > [file]" << endl;
+        return;
+    }
+
+    string content = inputLine.substr(5, redirectPos - 5);
+    string filename = inputLine.substr(redirectPos + 1);
+
+    content.erase(0, content.find_first_not_of(" \t"));
+    content.erase(content.find_last_not_of(" \t") + 1);
+    filename.erase(0, filename.find_first_not_of(" \t"));
+    filename.erase(filename.find_last_not_of(" \t") + 1);
+
+    ofstream file(filename);
+    if (!file)
+    {
+        cerr << "Failed: " << filename << endl;
+        return;
+    }
+
+    file << content;
+    file.close();
+    cout << "Complete: " << filename << endl;
+};
+
 int main()
 {
     string input;
@@ -171,111 +201,121 @@ int main()
         cout << ">>";
         getline(cin, input);
 
-        stringstream ss(input);
-        string command;
-        ss >> command;
+        if (input.empty())
+            continue;
 
-        if (command == "exit")
+        if (input.substr(0, 4) == "echo")
         {
-            break;
-        }
-        else if (command == "help")
-        {
-            showHelp();
-        }
-        else if (command == "time")
-        {
-            showTime();
-        }
-        else if (command == "echo")
-        {
-            string text;
-            getline(ss, text);
-            cout << text << endl;
-        }
-        else if (command == "clear")
-        {
-            clearScreen();
-        }
-        else if (command == "pwd")
-        {
-            printWorkDirectory();
-        }
-        else if (command == "ls")
-        {
-            listDirectory();
-        }
-        else if (command == "cd")
-        {
-            string target;
-            ss >> target;
-            if (target.empty())
-            {
-                cerr << "cd: Input Path.\n";
-            }
-            else
-            {
-                changeDirectory(target);
-            }
-        }
-        else if (command == "mkdir")
-        {
-            string folder;
-            ss >> folder;
-            if (folder.empty())
-            {
-                cerr << "mkdir: Input Directory Name.\n";
-            }
-            else
-            {
-                makeDirectory(folder);
-            }
-        }
-        else if (command == "touch")
-        {
-            string filename;
-            ss >> filename;
-            if (filename.empty())
-            {
-                cerr << "touch: Input filename.\n";
-            }
-            else
-            {
-                createFile(filename);
-            };
-        }
-        else if (command == "rm")
-        {
-            string filename;
-            ss >> filename;
-            if (filename.empty())
-            {
-                cerr << "rm: Input filename.\n";
-            }
-            else
-            {
-                removeFile(filename);
-            };
-        }
-        else if (command == "cat")
-        {
-            string filename;
-            ss >> filename;
-            if (filename.empty())
-            {
-                cerr << "Input filename.\n";
-            }
-            else
-            {
-                printFile(filename);
-            }
+            echoFile(input);
         }
         else
         {
-            cout << "Wrong Command. Input help" << endl;
+
+            stringstream ss(input);
+            string command;
+            ss >> command;
+
+            if (command == "exit")
+            {
+                break;
+            }
+            else if (command == "help")
+            {
+                showHelp();
+            }
+            else if (command == "time")
+            {
+                showTime();
+            }
+            else if (command == "echo")
+            {
+                string text;
+                getline(ss, text);
+                cout << text << endl;
+            }
+            else if (command == "clear")
+            {
+                clearScreen();
+            }
+            else if (command == "pwd")
+            {
+                printWorkDirectory();
+            }
+            else if (command == "ls")
+            {
+                listDirectory();
+            }
+            else if (command == "cd")
+            {
+                string target;
+                ss >> target;
+                if (target.empty())
+                {
+                    cerr << "cd: Input Path.\n";
+                }
+                else
+                {
+                    changeDirectory(target);
+                }
+            }
+            else if (command == "mkdir")
+            {
+                string folder;
+                ss >> folder;
+                if (folder.empty())
+                {
+                    cerr << "mkdir: Input Directory Name.\n";
+                }
+                else
+                {
+                    makeDirectory(folder);
+                }
+            }
+            else if (command == "touch")
+            {
+                string filename;
+                ss >> filename;
+                if (filename.empty())
+                {
+                    cerr << "touch: Input filename.\n";
+                }
+                else
+                {
+                    createFile(filename);
+                };
+            }
+            else if (command == "rm")
+            {
+                string filename;
+                ss >> filename;
+                if (filename.empty())
+                {
+                    cerr << "rm: Input filename.\n";
+                }
+                else
+                {
+                    removeFile(filename);
+                };
+            }
+            else if (command == "cat")
+            {
+                string filename;
+                ss >> filename;
+                if (filename.empty())
+                {
+                    cerr << "Input filename.\n";
+                }
+                else
+                {
+                    printFile(filename);
+                }
+            }
+            else
+            {
+                cout << "Wrong Command. Input help" << endl;
+            }
         }
     }
-
     cout << "Shell exit" << endl;
     return 0;
 }
