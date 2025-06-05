@@ -195,6 +195,7 @@ void echoFile(const string &inputLine)
 int main()
 {
     string input;
+    vector<string> historyList;
 
     while (true)
     {
@@ -204,9 +205,18 @@ int main()
         if (input.empty())
             continue;
 
+        historyList.push_back(input);
+
         if (input.substr(0, 4) == "echo")
         {
             echoFile(input);
+        }
+        else if (input == "history")
+        {
+            for (size_t i = 0; i < historyList.size(); ++i)
+            {
+                cout << i + 1 << "  " << historyList[i] << endl;
+            }
         }
         else
         {
