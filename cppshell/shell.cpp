@@ -1,7 +1,4 @@
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <vector>
+#include "Shell.h"
 #include <ctime>
 #include <filesystem>
 #include <direct.h>
@@ -12,12 +9,99 @@
 
 using namespace std;
 
-void showHelp()
+void Shell::run()
 {
-    cout << "Available Commands: echo, help, time, exit, clear, pwd, ls, cd, mkdir, touch " << endl;
+    string input;
+
+    while (true)
+    {
+        cout << ">> ";
+        if (!getline(cin, input))
+            break;
+        if (input.empty())
+            continue;
+
+        history.push_back(input);
+        handleInput(input);
+    }
 };
 
-void showTime()
+void Shell::handleInput(const string &line)
+{
+    if (line.substr(0, 4) == "echo")
+    {
+        cmdEcho(line);
+        return;
+    }
+    stringstream ss(line);
+    string cmd;
+    ss >> cmd;
+
+    if (cmd == "exit")
+    {
+        exit(0);
+    }
+    exeBuiltIn(cmd, ss);
+};
+
+void Shell::exeBuiltIn(const string &cmd, istream &args)
+{
+    if (cmd == "help")
+        cmdHelp();
+    else if (cmd == "time")
+        cmdTime();
+    else if (cmd == "clear")
+        cmdClear();
+    else if (cmd == "pwd")
+        cmdPwd();
+    else if (cmd == "ls")
+        cmdLs();
+    else if (cmd == "cd")
+    {
+        string path;
+        args >> path;
+        cmdCd(path);
+    }
+    else if (cmd == "mkdir")
+    {
+        string dir;
+        args >> dir;
+        cmdMkdir(dir);
+    }
+    else if (cmd == "touch")
+    {
+        string file;
+        args >> file;
+        cmdTouch(file);
+    }
+    else if (cmd == "rm")
+    {
+        string file;
+        args >> file;
+        cmdRm(file);
+    }
+    else if (cmd == "cat")
+    {
+        string file;
+        args >> file;
+        cmdCat(file);
+    }
+    else if (cmd == "history")
+    {
+        cmdHistory();
+    }
+    else
+    {
+        cout << "Wrong Command: help " << cmd << endl;
+    }
+}
+
+void Shell::cmdHelp()
+{
+    cout << "Available Commands: echo, help, time, exit, clear, pwd, ls, cd, mkdir, touch, rm, cat, history" << endl;
+};
+
+void Shell::cmdTime()
 {
     time_t now = time(0);
     tm *localTime = localtime(&now);
@@ -30,7 +114,7 @@ void showTime()
          << localTime->tm_sec << endl;
 };
 
-void clearScreen()
+void Shell::cmdClear()
 {
 #ifdef _WIN32
     system("cls"); // window
@@ -39,7 +123,7 @@ void clearScreen()
 #endif
 };
 
-void printWorkDirectory()
+void Shell::cmdPwd()
 {
     // cout << filesystem::current_path() << endl;
     char buffer[FILENAME_MAX];
@@ -54,7 +138,7 @@ void printWorkDirectory()
     }
 };
 
-void listDirectory()
+void Shell::cmdLs()
 {
     /*
     for (const auto &entry : filesystem::directory_iterator(filesystem::current_path()))
@@ -93,7 +177,7 @@ void listDirectory()
     _findclose(handle);
 };
 
-void changeDirectory(const string &path)
+void Shell::cmdCd(const string &path)
 {
     if (_chdir(path.c_str()) != 0)
     {
@@ -107,64 +191,64 @@ void changeDirectory(const string &path)
     };
 };
 
-void makeDirectory(const string &DName)
+void Shell::cmdMkdir(const string &dir)
 {
-    if (_mkdir(DName.c_str()) != 0)
+    if (_mkdir(dir.c_str()) != 0)
     {
-        cerr << "mkdir failed: " << DName << "'\n";
+        cerr << "mkdir failed: " << dir << "'\n";
         cerr << "Reason: " << strerror(errno) << "\n";
     }
     else
     {
-        cout << "mkdir success: " << DName << endl;
+        cout << "mkdir success: " << dir << endl;
     }
 };
 
-void createFile(const string &filename)
+void Shell::cmdTouch(const string &file)
 {
-    ofstream file(filename);
-    if (!file)
+    ofstream f(file);
+    if (!f)
     {
-        cerr << "create file failed: " << filename << endl;
+        cerr << "create file failed: " << file << endl;
         return;
     }
 
-    cout << "file is created" << filename << endl;
-    file.close();
+    cout << "file is created" << file << endl;
+    f.close();
 };
 
-void removeFile(const string &filename)
+void Shell::cmdRm(const string &file)
 {
-    if (remove(filename.c_str()) != 0)
+    if (remove(file.c_str()) != 0)
     {
-        cerr << "File Remove Fail: " << filename << endl;
+        cerr << "File Remove Fail: " << file << endl;
     }
     else
     {
-        cout << "File Removed: " << filename << endl;
+        cout << "File Removed: " << file << endl;
     }
 };
 
-void printFile(const string &filename)
+void Shell::cmdCat(const string &file)
 {
-    ifstream file(filename);
-    if (!file.is_open())
+    ifstream f(file);
+    if (!f.is_open())
     {
-        cerr << "Open File failed" << filename << endl;
+        cerr << "Open File failed" << file << endl;
         return;
     }
     string line;
-    while (getline(file, line))
+    while (getline(f, line))
     {
         cout << line << endl;
     }
 
-    file.close();
+    f.close();
 };
 
-void echoFile(const string &inputLine)
+void Shell::cmdEcho(const string &line)
 {
-    size_t redirectPos = inputLine.find('>');
+    size_t redirectPos = line.find('>');
 
     if (redirectPos == string::npos)
     {
@@ -172,8 +256,8 @@ void echoFile(const string &inputLine)
         return;
     }
 
-    string content = inputLine.substr(5, redirectPos - 5);
-    string filename = inputLine.substr(redirectPos + 1);
+    string content = line.substr(5, redirectPos - 5);
+    string filename = line.substr(redirectPos + 1);
 
     content.erase(0, content.find_first_not_of(" \t"));
     content.erase(content.find_last_not_of(" \t") + 1);
@@ -192,140 +276,16 @@ void echoFile(const string &inputLine)
     cout << "Complete: " << filename << endl;
 };
 
-int main()
+void Shell::cmdHistory()
 {
-    string input;
-    vector<string> historyList;
-
-    while (true)
+    for (size_t i = 0; i < history.size(); ++i)
     {
-        cout << ">>";
-        getline(cin, input);
-
-        if (input.empty())
-            continue;
-
-        historyList.push_back(input);
-
-        if (input.substr(0, 4) == "echo")
-        {
-            echoFile(input);
-        }
-        else if (input == "history")
-        {
-            for (size_t i = 0; i < historyList.size(); ++i)
-            {
-                cout << i + 1 << "  " << historyList[i] << endl;
-            }
-        }
-        else
-        {
-
-            stringstream ss(input);
-            string command;
-            ss >> command;
-
-            if (command == "exit")
-            {
-                break;
-            }
-            else if (command == "help")
-            {
-                showHelp();
-            }
-            else if (command == "time")
-            {
-                showTime();
-            }
-            else if (command == "echo")
-            {
-                string text;
-                getline(ss, text);
-                cout << text << endl;
-            }
-            else if (command == "clear")
-            {
-                clearScreen();
-            }
-            else if (command == "pwd")
-            {
-                printWorkDirectory();
-            }
-            else if (command == "ls")
-            {
-                listDirectory();
-            }
-            else if (command == "cd")
-            {
-                string target;
-                ss >> target;
-                if (target.empty())
-                {
-                    cerr << "cd: Input Path.\n";
-                }
-                else
-                {
-                    changeDirectory(target);
-                }
-            }
-            else if (command == "mkdir")
-            {
-                string folder;
-                ss >> folder;
-                if (folder.empty())
-                {
-                    cerr << "mkdir: Input Directory Name.\n";
-                }
-                else
-                {
-                    makeDirectory(folder);
-                }
-            }
-            else if (command == "touch")
-            {
-                string filename;
-                ss >> filename;
-                if (filename.empty())
-                {
-                    cerr << "touch: Input filename.\n";
-                }
-                else
-                {
-                    createFile(filename);
-                };
-            }
-            else if (command == "rm")
-            {
-                string filename;
-                ss >> filename;
-                if (filename.empty())
-                {
-                    cerr << "rm: Input filename.\n";
-                }
-                else
-                {
-                    removeFile(filename);
-                };
-            }
-            else if (command == "cat")
-            {
-                string filename;
-                ss >> filename;
-                if (filename.empty())
-                {
-                    cerr << "Input filename.\n";
-                }
-                else
-                {
-                    printFile(filename);
-                }
-            }
-            else
-            {
-                cout << "Wrong Command. Input help" << endl;
-            }
-        }
+        std::cout << i + 1 << "  " << history[i] << std::endl;
     }
-    cout << "Shell exit" << endl;
-    return 0;
+}
+string Shell::trim(const string &s)
+{
+    size_t start = s.find_first_not_of(" \t");
+    size_t end = s.find_last_not_of(" \t");
+    return (start == string::npos) ? "" : s.substr(start, end - start + 1);
 }
