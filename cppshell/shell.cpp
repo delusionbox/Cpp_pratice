@@ -28,6 +28,15 @@ void Shell::run()
 
 void Shell::handleInput(const string &line)
 {
+    // pipe
+    size_t pipePos = line.find('|');
+    if (pipePos != string::npos)
+    {
+        string cmd1 = trim(line.substr(0, pipePos));
+        string cmd2 = trim(line.substr(pipePos + 1));
+        executePipe(cmd1, cmd2);
+        return;
+    }
     if (line.substr(0, 4) == "echo")
     {
         cmdEcho(line);
@@ -44,18 +53,41 @@ void Shell::handleInput(const string &line)
     exeBuiltIn(cmd, ss);
 };
 
+void Shell::executePipe(const string &cmd1, const string &cmd2)
+{
+    // cmd1
+    stringstream intermediateOutput;
+    stringstream ss1(cmd1);
+    string command1;
+    ss1 >> command1;
+
+    executeBuiltIn(command1, ss1, intermediateOutput);
+
+    // cmd2
+    stringstream ss2(cmd2);
+    string command2;
+    ss2 >> command2;
+
+    executeBuiltIn(command2, ss2, intermediateOutput);
+};
+
 void Shell::exeBuiltIn(const string &cmd, istream &args)
 {
+    executeBuiltIn(cmd, args, cout);
+};
+
+void Shell::executeBuiltIn(const string &cmd, istream &args, ostream &out)
+{
     if (cmd == "help")
-        cmdHelp();
+        cmdHelp(out);
     else if (cmd == "time")
-        cmdTime();
+        cmdTime(out);
     else if (cmd == "clear")
         cmdClear();
     else if (cmd == "pwd")
-        cmdPwd();
+        cmdPwd(out);
     else if (cmd == "ls")
-        cmdLs();
+        cmdLs(out);
     else if (cmd == "cd")
     {
         string path;
@@ -88,7 +120,7 @@ void Shell::exeBuiltIn(const string &cmd, istream &args)
     }
     else if (cmd == "history")
     {
-        cmdHistory();
+        cmdHistory(out);
     }
     else
     {
@@ -96,12 +128,12 @@ void Shell::exeBuiltIn(const string &cmd, istream &args)
     }
 }
 
-void Shell::cmdHelp()
+void Shell::cmdHelp(ostream &out)
 {
     cout << "Available Commands: echo, help, time, exit, clear, pwd, ls, cd, mkdir, touch, rm, cat, history" << endl;
 };
 
-void Shell::cmdTime()
+void Shell::cmdTime(ostream &out)
 {
     time_t now = time(0);
     tm *localTime = localtime(&now);
@@ -123,7 +155,7 @@ void Shell::cmdClear()
 #endif
 };
 
-void Shell::cmdPwd()
+void Shell::cmdPwd(ostream &out)
 {
     // cout << filesystem::current_path() << endl;
     char buffer[FILENAME_MAX];
@@ -138,7 +170,7 @@ void Shell::cmdPwd()
     }
 };
 
-void Shell::cmdLs()
+void Shell::cmdLs(ostream &out)
 {
     /*
     for (const auto &entry : filesystem::directory_iterator(filesystem::current_path()))
@@ -276,7 +308,7 @@ void Shell::cmdEcho(const string &line)
     cout << "Complete: " << filename << endl;
 };
 
-void Shell::cmdHistory()
+void Shell::cmdHistory(ostream &out)
 {
     for (size_t i = 0; i < history.size(); ++i)
     {
