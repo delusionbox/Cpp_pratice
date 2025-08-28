@@ -1,4 +1,4 @@
-#ATM console clone coding
+# ATM console clone coding
 
-##I annotated what I learned next to the code.
+## I annotated what I learned next to the code.
 
