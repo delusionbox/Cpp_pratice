@@ -74,8 +74,79 @@ struct Account
     std::vector<Transaction> history;
 };
 
+class ATM
+{
+
+public:
+    //  createAccount
+    void createAccount();
+    // login
+    void login();
+    // logout
+    void logout()
+    {
+        std::cout << "logout";
+    };
+    // check balance
+    void checkBalance()
+    {
+        std::cout << "check";
+    };
+    // deposit
+    void deposit()
+    {
+        std::cout << "deposit";
+    };
+    // withdraw
+    void withdraw()
+    {
+        std::cout << "withdraw";
+    };
+    // History
+    void history()
+    {
+        std::cout << "history";
+    };
+    // Menu
+    void userMenu()
+    {
+        int select = 0;
+        while (true)
+        {
+            clearScreen();
+            printHeader("ATM");
+            std::cout << "";
+            std::cin >> select;
+            std::cin.ignore();
+            switch (select)
+            {
+            case 1:
+                checkBalance();
+                break;
+            case 2:
+                deposit();
+                break;
+            case 3:
+                withdraw();
+                break;
+            case 4:
+                history();
+                break;
+            case 5:
+                logout();
+                break;
+            default:
+                std::cout << "choice";
+                pause();
+                break;
+            };
+        }
+    };
+};
+
 int main()
 {
+    /*
     Account a = {"john doe", 1.2, "asdf"};
     printHeader("hello");
     std::cout << a.username << a.balance << a.pin << std::endl;
@@ -83,5 +154,8 @@ int main()
     pause();
     std::string pin = getHiddenInput("Enter 4-pin: ");
     std::cout << "\nEntered: " << pin << std::endl;
+    */
+    ATM atm;
+    atm.userMenu();
     return 0;
 }
