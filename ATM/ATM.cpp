@@ -4,6 +4,7 @@
 #include <cstdlib> //clear function
 #include <limits>  //numeric_limits
 #include <conio.h> //_getch
+#include <map>
 
 std::string getHiddenInput(const std::string &prompt) // hiding input text
 {
@@ -76,6 +77,8 @@ struct Account
 
 class ATM
 {
+    std::map<std::string, Account> accounts;
+    Account *currentUser = nullptr;
 
 public:
     //  createAccount
@@ -85,27 +88,70 @@ public:
     // logout
     void logout()
     {
-        std::cout << "logout";
+        currentUser = nullptr;
     };
     // check balance
     void checkBalance()
     {
-        std::cout << "check";
+        printHeader("check Balance");
+        std::cout << "Balance: $" << currentUser->balance << std::endl;
+        pause();
     };
     // deposit
     void deposit()
     {
-        std::cout << "deposit";
+        printHeader("deposit");
+        double amount;
+        std::cin >> amount;
+        std::cin.ignore();
+        if (amount > 0)
+        {
+            currentUser->balance += amount;
+            currentUser->history.push_back({"Deposit", amount});
+            std::cout << "success deposit" << std::endl;
+        }
+        else
+        {
+            std::cout << "Error" << std::endl;
+        }
+        pause();
     };
     // withdraw
     void withdraw()
     {
-        std::cout << "withdraw";
+        printHeader("withdraw");
+        double amount;
+        std::cout << "Withdraw money: $";
+        std::cin >> amount;
+        std::cin.ignore();
+        if (amount > 0 && amount <= currentUser->balance)
+        {
+            currentUser->balance -= amount;
+            currentUser->history.push_back({"Withdraw", amount});
+            std::cout << "withdraw success" << std::endl;
+        }
+        else
+        {
+            std::cout << "No money";
+        }
+        pause();
     };
     // History
-    void history()
+    void showHistory()
     {
-        std::cout << "history";
+        printHeader("Transaction History");
+        if (currentUser->history.empty())
+        {
+            std::cout << "No history.\n";
+        }
+        else
+        {
+            for (const auto &text : currentUser->history)
+            {
+                std::cout << text.type << "$" << text.amount;
+            }
+        }
+        pause();
     };
     // Menu
     void userMenu()
@@ -130,7 +176,7 @@ public:
                 withdraw();
                 break;
             case 4:
-                history();
+                showHistory();
                 break;
             case 5:
                 logout();
